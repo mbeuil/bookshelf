@@ -3,28 +3,30 @@
 
 // 🐨 let's get a solid reset of global styles so everything looks a bit better
 // In this project we're using bootstrap-reboot which you can import from
-// bootstrap/dist/css/bootstrap-reboot.css
+import 'bootstrap/dist/css/bootstrap-reboot.css';
 // 🦉 Note: you can definitely use regular styles to style React apps
 // and using any modern toolchain will allow you to simply import the CSS file
 // but CSS-in-JS is generally easier to maintain.
-import '@reach/dialog/styles.css'
-import React from 'react'
-import ReactDOM from 'react-dom'
+import '@reach/dialog/styles.css';
+import React from 'react';
+import ReactDOM from 'react-dom';
 // 🐨 you'll need to import some new components that you'll be creating
 // in this file
 // import {Button, Input, FormGroup} from './components/lib'
-import {Modal, ModalContents, ModalOpenButton} from './components/modal'
-import {Logo} from './components/logo'
+import {Modal, ModalContents, ModalOpenButton} from './components/modal';
+import {Logo} from './components/logo';
+
+import * as S from 'components/styles';
 
 function LoginForm({onSubmit, submitButton}) {
   function handleSubmit(event) {
-    event.preventDefault()
-    const {username, password} = event.target.elements
+    event.preventDefault();
+    const {username, password} = event.target.elements;
 
     onSubmit({
       username: username.value,
       password: password.value,
-    })
+    });
   }
 
   // 🐨 this <form> could use a css prop
@@ -51,16 +53,16 @@ function LoginForm({onSubmit, submitButton}) {
       </div>
       <div>{React.cloneElement(submitButton, {type: 'submit'})}</div>
     </form>
-  )
+  );
 }
 
 function App() {
   function login(formData) {
-    console.log('login', formData)
+    console.log('login', formData);
   }
 
   function register(formData) {
-    console.log('register', formData)
+    console.log('register', formData);
   }
 
   // 🐨 this div could use a css prop to get its children rendered nicer
@@ -86,7 +88,7 @@ function App() {
       <div>
         <Modal>
           <ModalOpenButton>
-            <button variant="primary">Login</button>
+            <S.Button variant="primary">Login</S.Button>
           </ModalOpenButton>
           <ModalContents aria-label="Login form" title="Login">
             <LoginForm
@@ -97,7 +99,7 @@ function App() {
         </Modal>
         <Modal>
           <ModalOpenButton>
-            <button variant="secondary">Register</button>
+            <S.Button variant="secondary">Register</S.Button>
           </ModalOpenButton>
           <ModalContents aria-label="Registration form" title="Register">
             <LoginForm
@@ -108,7 +110,7 @@ function App() {
         </Modal>
       </div>
     </div>
-  )
+  );
 }
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'));
