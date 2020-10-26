@@ -49,6 +49,7 @@ function LoginForm({onSubmit, title, close}) {
           <S.Button type="submit">{title}</S.Button>
         </div>
       </S.Form>
+      <S.LoadingSpinner />
     </>
   );
 }
