@@ -1,36 +1,102 @@
 /** @jsx jsx */
-import {jsx} from '@emotion/core'
+import {jsx} from '@emotion/core';
+import {
+  useState,
+  useEffect,
+  useReducer,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+} from 'react';
+import './bootstrap';
+import Tooltip from '@reach/tooltip';
+import {FaSearch, FaTimes} from 'react-icons/fa';
+import {Input, BookListUL, Spinner} from './components/lib';
+import {BookRow} from './components/book-row';
+import {client} from 'utils/api-client';
 
-import './bootstrap'
-import Tooltip from '@reach/tooltip'
-import {FaSearch} from 'react-icons/fa'
-import {Input, BookListUL, Spinner} from './components/lib'
-import {BookRow} from './components/book-row'
-// 🐨 import the client from './utils/api-client'
+import * as colors from 'styles/colors';
+
+const asyncReducer = (state, action) => {
+  switch (action.type) {
+    case 'START': {
+      return {...state, status: 'pending'};
+    }
+    case 'SUCCESS': {
+      return {...state, status: 'resolved', data: action.data};
+    }
+    case 'ERROR': {
+      return {...state, status: 'rejected', error: action.error};
+    }
+    default: {
+      throw new Error(`Unhandled action type: ${action.type}`);
+    }
+  }
+};
+
+function useSafeDispatch(dispatch) {
+  const mountedRef = useRef(false);
+
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  return useCallback(
+    (...args) => {
+      if (mountedRef.current) {
+        dispatch(...args);
+      }
+    },
+    [dispatch],
+  );
+}
+
+function useAsync() {
+  const [{status, data, error}, unsafeDispatch] = useReducer(asyncReducer, {
+    status: 'idle',
+    data: null,
+    error: null,
+  });
+
+  const dispatch = useSafeDispatch(unsafeDispatch);
+
+  const run = useCallback(
+    promise => {
+      if (!promise || !promise.then) {
+        throw new Error(
+          `The argument passed to useAsync().run must be a promise. Maybe a function that's passed isn't returning anything?`,
+        );
+      }
+      dispatch({type: 'START'});
+      promise()
+        .then(data => dispatch({type: 'SUCCESS', data}))
+        .catch(error => dispatch({type: 'ERROR', error}));
+    },
+    [dispatch],
+  );
+
+  return {status, data, error, run};
+}
 
 function DiscoverBooksScreen() {
-  // 🐨 add state for status ('idle', 'loading', or 'success'), data, and query
-  const data = null // 💣 remove this, it's just here so the example doesn't explode
-  // 🐨 you'll also notice that we don't want to run the search until the
-  // user has submitted the form, so you'll need a boolean for that as well
-  // 💰 I called it "queried"
+  const {status, data, error, run} = useAsync();
+  const [book, setBook] = useState('');
+  const [isQueried, setIsQueried] = useState(false);
 
-  // 🐨 Add a useEffect callback here for making the request with the
-  // client and updating the status and data.
-  // 💰 Here's the endpoint you'll call: `books?query=${encodeURIComponent(query)}`
-  // 🐨 remember, effect callbacks are called on the initial render too
-  // so you'll want to check if the user has submitted the form yet and if
-  // they haven't then return early (💰 this is what the queried state is for).
-
-  // 🐨 replace these with derived state values based on the status.
-  const isLoading = false
-  const isSuccess = false
+  useEffect(() => {
+    if (!isQueried) {
+      return;
+    }
+    run(client(`books?query=${encodeURIComponent(book)}`));
+  }, [isQueried, run, book]);
 
   function handleSearchSubmit(event) {
-    // 🐨 call preventDefault on the event so you don't get a full page reload
-    // 🐨 set the queried state to true
-    // 🐨 set the query value which you can get from event.target.elements
-    // 💰 console.log(event.target.elements) if you're not sure.
+    event.preventDefault();
+    setBook(event.target.elements.search.value);
+    setIsQueried(true);
   }
 
   return (
@@ -54,13 +120,26 @@ function DiscoverBooksScreen() {
                 background: 'transparent',
               }}
             >
-              {isLoading ? <Spinner /> : <FaSearch aria-label="search" />}
+              {status === 'pending' ? (
+                <Spinner />
+              ) : status === 'rejected' ? (
+                <FaTimes aria-label="error" css={{color: colors.danger}} />
+              ) : (
+                <FaSearch aria-label="search" />
+              )}
             </button>
           </label>
         </Tooltip>
       </form>
 
-      {isSuccess ? (
+      {status === 'rejected' ? (
+        <div css={{color: colors.danger}}>
+          <p>There was an error:</p>
+          <pre>{error.message}</pre>
+        </div>
+      ) : null}
+
+      {status === 'resolved' ? (
         data?.books?.length ? (
           <BookListUL css={{marginTop: 20}}>
             {data.books.map(book => (
@@ -74,7 +153,7 @@ function DiscoverBooksScreen() {
         )
       ) : null}
     </div>
-  )
+  );
 }
 
-export {DiscoverBooksScreen}
+export {DiscoverBooksScreen};

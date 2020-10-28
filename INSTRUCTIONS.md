@@ -11,11 +11,11 @@ API in action:
 window
   .fetch('http://example.com/movies.json')
   .then(response => {
-    return response.json()
+    return response.json();
   })
   .then(data => {
-    console.log(data)
-  })
+    console.log(data);
+  });
 ```
 
 All the HTTP methods are supported as well, for example, here's how you would
@@ -34,11 +34,11 @@ window
     body: JSON.stringify(data), // body data type must match "content-type" header
   })
   .then(response => {
-    return response.json()
+    return response.json();
   })
   .then(data => {
-    console.log(data)
-  })
+    console.log(data);
+  });
 ```
 
 If the request fails with an unsuccessful status code (`>= 400`), then the
@@ -47,13 +47,13 @@ promise in this case:
 
 ```javascript
 window.fetch(url).then(async response => {
-  const data = await response.json()
+  const data = await response.json();
   if (response.ok) {
-    return data
+    return data;
   } else {
-    return Promise.reject(data)
+    return Promise.reject(data);
   }
-})
+});
 ```
 
 It's good practice to wrap `window.fetch` in your own function so you can set
@@ -81,7 +81,7 @@ environment variable which we can use in our code for the API url (you can see
 that in `.env` and `.env.development`). The URL for the search API is:
 
 ```javascript
-const endpoint = `${process.env.REACT_APP_API_URL}/books?query=Voice%20of%20War`
+const endpoint = `${process.env.REACT_APP_API_URL}/books?query=Voice%20of%20War`;
 ```
 
 Making a request to this endpoint will return this data:
@@ -141,7 +141,7 @@ For the search icon:
       <p>There was an error:</p>
       <pre>{error.message}</pre>
     </div>
-  ) : null
+  ) : null;
 }
 ```
 
@@ -165,12 +165,12 @@ You respond by palming your face 🤦‍♂️ and go back to the drawing board.
 `useAsync` is slightly different from what you've built. Here's an example:
 
 ```javascript
-import {useAsync} from 'utils/hooks'
+import {useAsync} from 'utils/hooks';
 
-const {data, error, run, isLoading, isError, isSuccess} = useAsync()
+const {data, error, run, isLoading, isError, isSuccess} = useAsync();
 
 // in an event handler/effect/wherever
-run(doSomethingThatReturnsAPromise())
+run(doSomethingThatReturnsAPromise());
 ```
 
 This seems to handle your use case well, so let's swap your custom solution with
